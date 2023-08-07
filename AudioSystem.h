@@ -46,7 +46,7 @@ public:
 
 	static SoundHandle Invalid;
 
-private:
+public:
 	unsigned int mID = 0;
 };
 
@@ -105,7 +105,7 @@ public:
 	//       "Assets/Sounds/ChompLoop.wav".
 	void CacheSound(const std::string& soundName);
 
-private:
+public:
 	// If the sound is already loaded, returns Mix_Chunk from the map.
 	// Otherwise, will attempt to load the file and save it in the map.
 	// Returns nullptr if sound is not found.

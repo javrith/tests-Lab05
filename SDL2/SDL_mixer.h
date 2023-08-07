@@ -55,6 +55,74 @@ struct Mock
 		Reset();
 	}
 
+	int PlayChannel(int channel, Mix_Chunk* chunk, int loops)
+	{
+		if (channel == -1)
+		{
+			FAIL("Mix_PlayChannel should not be called with a channel of -1");
+		}
+
+		if (channel < 0 || channel >= mChannels.size())
+		{
+			FAIL("Mix_PlayChannel called with an out-of-bounds channel");
+		}
+
+		mChannels[channel].mChunk = chunk;
+		mChannels[channel].mPlaying = true;
+		mChannels[channel].mPaused = false;
+		mChannels[channel].mLoops = loops;
+
+		return 0;
+	}
+
+	void HaltChannel(int channel)
+	{
+		if (channel == -1)
+		{
+			FAIL("Mix_HaltChannel should not be called with a channel of -1");
+		}
+
+		if (channel < 0 || channel >= mChannels.size())
+		{
+			FAIL("Mix_HaltChannel called with an out-of-bounds channel");
+		}
+
+		mChannels[channel].mChunk = nullptr;
+		mChannels[channel].mPlaying = false;
+	}
+
+	void Pause(int channel)
+	{
+		if (channel == -1)
+		{
+			FAIL("Mix_Pause should not be called with a channel of -1");
+		}
+
+		if (channel < 0 || channel >= mChannels.size())
+		{
+			FAIL("Mix_Pause called with an out-of-bounds channel");
+		}
+
+		mChannels[channel].mPaused = true;
+	}
+
+	void Resume(int channel)
+	{
+		if (channel == -1)
+		{
+			FAIL("Mix_Resume should not be called with a channel of -1");
+		}
+
+		if (channel < 0 || channel >= mChannels.size())
+		{
+			FAIL("Mix_Resume called with an out-of-bounds channel");
+		}
+
+		mChannels[channel].mPaused = false;
+	}
+
+	int Playing(int channel) { return mChannels[channel].mPlaying ? 1 : 0; }
+
 	Mix_Chunk* LoadWAV(const char* file)
 	{
 		Mix_Chunk* chunk = new Mix_Chunk{file};
@@ -67,7 +135,7 @@ struct Mock
 		Mix_Chunk* mChunk = nullptr;
 		bool mPlaying = false;
 		bool mPaused = false;
-		bool mLooping = false;
+		int mLoops = 0;
 	};
 
 	int mFrequency = 0;
@@ -104,27 +172,30 @@ void Mix_CloseAudio()
 	Mock::Mixer.CloseAudio();
 }
 
-int Mix_Playing(int channel)
-{
-	return 0;
-}
-
 int Mix_PlayChannel(int channel, Mix_Chunk* chunk, int loops)
 {
-	return 0;
+	return Mock::Mixer.PlayChannel(channel, chunk, loops);
 }
 
 int Mix_HaltChannel(int channel)
 {
+	Mock::Mixer.HaltChannel(channel);
 	return 0;
 }
 
 void Mix_Pause(int channel)
 {
+	Mock::Mixer.Pause(channel);
 }
 
 void Mix_Resume(int channel)
 {
+	Mock::Mixer.Resume(channel);
+}
+
+int Mix_Playing(int channel)
+{
+	return Mock::Mixer.Playing(channel);
 }
 
 Mix_Chunk* Mix_LoadWAV(const char* file)
