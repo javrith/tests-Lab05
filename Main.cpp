@@ -299,122 +299,7 @@ TEST_CASE("AudioSystem tests")
 		REQUIRE(Mock::Mixer.mChannels[3].mChunk != nullptr);
 		REQUIRE(Mock::Mixer.mChannels[3].mChunk->mName == "Assets/Sounds/4.wav");
 	}
-
-	SECTION("PlaySound running out of channels priority 1 (oldest instance of same sound)")
-	{
-		AudioSystem as(4);
-		as.CacheSound("1.wav");
-		as.CacheSound("2.wav");
-		as.CacheSound("3.wav");
-
-		SoundHandle snd = as.PlaySound("1.wav");
-		SoundHandle snd2 = as.PlaySound("2.wav");
-		SoundHandle snd3 = as.PlaySound("2.wav");
-		SoundHandle snd4 = as.PlaySound("2.wav");
-		SoundHandle snd5 = as.PlaySound("2.wav");
-
-		// Channels should be in this order: snd, snd5, snd3, snd4
-		REQUIRE(as.mChannels[0] == snd);
-		REQUIRE(as.mChannels[1] == snd5);
-		REQUIRE(as.mChannels[2] == snd3);
-		REQUIRE(as.mChannels[3] == snd4);
-
-		// Make sure that snd2 is not in the map (and the others are)
-		REQUIRE(as.mHandleMap.find(snd2) == as.mHandleMap.end());
-		REQUIRE(as.mHandleMap.find(snd) != as.mHandleMap.end());
-		REQUIRE(as.mHandleMap.find(snd3) != as.mHandleMap.end());
-		REQUIRE(as.mHandleMap.find(snd4) != as.mHandleMap.end());
-		REQUIRE(as.mHandleMap.find(snd5) != as.mHandleMap.end());
-
-		// Make sure we have the correct sounds in SDL_Mixer
-		REQUIRE(Mock::Mixer.mChannels[0].mChunk != nullptr);
-		REQUIRE(Mock::Mixer.mChannels[0].mChunk->mName == "Assets/Sounds/1.wav");
-		REQUIRE(Mock::Mixer.mChannels[1].mChunk != nullptr);
-		REQUIRE(Mock::Mixer.mChannels[1].mChunk->mName == "Assets/Sounds/2.wav");
-		REQUIRE(Mock::Mixer.mChannels[2].mChunk != nullptr);
-		REQUIRE(Mock::Mixer.mChannels[2].mChunk->mName == "Assets/Sounds/2.wav");
-		REQUIRE(Mock::Mixer.mChannels[3].mChunk != nullptr);
-		REQUIRE(Mock::Mixer.mChannels[3].mChunk->mName == "Assets/Sounds/2.wav");
-	}
-
-	SECTION("PlaySound running out of channels priority 2 (oldest non-looping sound)")
-	{
-		AudioSystem as(4);
-		as.CacheSound("1.wav");
-		as.CacheSound("2.wav");
-		as.CacheSound("3.wav");
-		as.CacheSound("4.wav");
-		as.CacheSound("5.wav");
-
-		SoundHandle snd = as.PlaySound("1.wav", true);
-		SoundHandle snd2 = as.PlaySound("2.wav", true);
-		SoundHandle snd3 = as.PlaySound("3.wav");
-		SoundHandle snd4 = as.PlaySound("4.wav", true);
-		SoundHandle snd5 = as.PlaySound("5.wav");
-
-		// Channels should be in this order: snd, snd2, snd5, snd4
-		REQUIRE(as.mChannels[0] == snd);
-		REQUIRE(as.mChannels[1] == snd2);
-		REQUIRE(as.mChannels[2] == snd5);
-		REQUIRE(as.mChannels[3] == snd4);
-
-		// Make sure that snd3 is not in the map (and the others are)
-		REQUIRE(as.mHandleMap.find(snd3) == as.mHandleMap.end());
-		REQUIRE(as.mHandleMap.find(snd) != as.mHandleMap.end());
-		REQUIRE(as.mHandleMap.find(snd2) != as.mHandleMap.end());
-		REQUIRE(as.mHandleMap.find(snd4) != as.mHandleMap.end());
-		REQUIRE(as.mHandleMap.find(snd5) != as.mHandleMap.end());
-
-		// Make sure we have the correct sounds in SDL_Mixer
-		REQUIRE(Mock::Mixer.mChannels[0].mChunk != nullptr);
-		REQUIRE(Mock::Mixer.mChannels[0].mChunk->mName == "Assets/Sounds/1.wav");
-		REQUIRE(Mock::Mixer.mChannels[1].mChunk != nullptr);
-		REQUIRE(Mock::Mixer.mChannels[1].mChunk->mName == "Assets/Sounds/2.wav");
-		REQUIRE(Mock::Mixer.mChannels[2].mChunk != nullptr);
-		REQUIRE(Mock::Mixer.mChannels[2].mChunk->mName == "Assets/Sounds/5.wav");
-		REQUIRE(Mock::Mixer.mChannels[3].mChunk != nullptr);
-		REQUIRE(Mock::Mixer.mChannels[3].mChunk->mName == "Assets/Sounds/4.wav");
-	}
-
-	SECTION("PlaySound running out of channels priority 3 (oldest sound)")
-	{
-		AudioSystem as(4);
-		as.CacheSound("1.wav");
-		as.CacheSound("2.wav");
-		as.CacheSound("3.wav");
-		as.CacheSound("4.wav");
-		as.CacheSound("5.wav");
-
-		SoundHandle snd = as.PlaySound("1.wav", true);
-		SoundHandle snd2 = as.PlaySound("2.wav", true);
-		SoundHandle snd3 = as.PlaySound("3.wav", true);
-		SoundHandle snd4 = as.PlaySound("4.wav", true);
-		SoundHandle snd5 = as.PlaySound("5.wav");
-
-		// Channels should be in this order: snd5, snd2, snd3, snd4
-		REQUIRE(as.mChannels[0] == snd5);
-		REQUIRE(as.mChannels[1] == snd2);
-		REQUIRE(as.mChannels[2] == snd3);
-		REQUIRE(as.mChannels[3] == snd4);
-
-		// Make sure that snd is not in the map (and the others are)
-		REQUIRE(as.mHandleMap.find(snd) == as.mHandleMap.end());
-		REQUIRE(as.mHandleMap.find(snd2) != as.mHandleMap.end());
-		REQUIRE(as.mHandleMap.find(snd3) != as.mHandleMap.end());
-		REQUIRE(as.mHandleMap.find(snd4) != as.mHandleMap.end());
-		REQUIRE(as.mHandleMap.find(snd5) != as.mHandleMap.end());
-
-		// Make sure we have the correct sounds in SDL_Mixer
-		REQUIRE(Mock::Mixer.mChannels[0].mChunk != nullptr);
-		REQUIRE(Mock::Mixer.mChannels[0].mChunk->mName == "Assets/Sounds/5.wav");
-		REQUIRE(Mock::Mixer.mChannels[1].mChunk != nullptr);
-		REQUIRE(Mock::Mixer.mChannels[1].mChunk->mName == "Assets/Sounds/2.wav");
-		REQUIRE(Mock::Mixer.mChannels[2].mChunk != nullptr);
-		REQUIRE(Mock::Mixer.mChannels[2].mChunk->mName == "Assets/Sounds/3.wav");
-		REQUIRE(Mock::Mixer.mChannels[3].mChunk != nullptr);
-		REQUIRE(Mock::Mixer.mChannels[3].mChunk->mName == "Assets/Sounds/4.wav");
-	}
-
+	
 	SECTION("PauseSound pauses a playing sound")
 	{
 		AudioSystem as(4);
@@ -685,5 +570,120 @@ TEST_CASE("AudioSystem tests")
 
 		// Make sure invalid sound was not added into map
 		REQUIRE(as.mHandleMap.find(SoundHandle::Invalid) == as.mHandleMap.end());
+	}
+	
+	SECTION("PlaySound running out of channels priority 1 (oldest instance of same sound)")
+	{
+		AudioSystem as(4);
+		as.CacheSound("1.wav");
+		as.CacheSound("2.wav");
+		as.CacheSound("3.wav");
+
+		SoundHandle snd = as.PlaySound("1.wav");
+		SoundHandle snd2 = as.PlaySound("2.wav");
+		SoundHandle snd3 = as.PlaySound("2.wav");
+		SoundHandle snd4 = as.PlaySound("2.wav");
+		SoundHandle snd5 = as.PlaySound("2.wav");
+
+		// Channels should be in this order: snd, snd5, snd3, snd4
+		REQUIRE(as.mChannels[0] == snd);
+		REQUIRE(as.mChannels[1] == snd5);
+		REQUIRE(as.mChannels[2] == snd3);
+		REQUIRE(as.mChannels[3] == snd4);
+
+		// Make sure that snd2 is not in the map (and the others are)
+		REQUIRE(as.mHandleMap.find(snd2) == as.mHandleMap.end());
+		REQUIRE(as.mHandleMap.find(snd) != as.mHandleMap.end());
+		REQUIRE(as.mHandleMap.find(snd3) != as.mHandleMap.end());
+		REQUIRE(as.mHandleMap.find(snd4) != as.mHandleMap.end());
+		REQUIRE(as.mHandleMap.find(snd5) != as.mHandleMap.end());
+
+		// Make sure we have the correct sounds in SDL_Mixer
+		REQUIRE(Mock::Mixer.mChannels[0].mChunk != nullptr);
+		REQUIRE(Mock::Mixer.mChannels[0].mChunk->mName == "Assets/Sounds/1.wav");
+		REQUIRE(Mock::Mixer.mChannels[1].mChunk != nullptr);
+		REQUIRE(Mock::Mixer.mChannels[1].mChunk->mName == "Assets/Sounds/2.wav");
+		REQUIRE(Mock::Mixer.mChannels[2].mChunk != nullptr);
+		REQUIRE(Mock::Mixer.mChannels[2].mChunk->mName == "Assets/Sounds/2.wav");
+		REQUIRE(Mock::Mixer.mChannels[3].mChunk != nullptr);
+		REQUIRE(Mock::Mixer.mChannels[3].mChunk->mName == "Assets/Sounds/2.wav");
+	}
+
+	SECTION("PlaySound running out of channels priority 2 (oldest non-looping sound)")
+	{
+		AudioSystem as(4);
+		as.CacheSound("1.wav");
+		as.CacheSound("2.wav");
+		as.CacheSound("3.wav");
+		as.CacheSound("4.wav");
+		as.CacheSound("5.wav");
+
+		SoundHandle snd = as.PlaySound("1.wav", true);
+		SoundHandle snd2 = as.PlaySound("2.wav", true);
+		SoundHandle snd3 = as.PlaySound("3.wav");
+		SoundHandle snd4 = as.PlaySound("4.wav", true);
+		SoundHandle snd5 = as.PlaySound("5.wav");
+
+		// Channels should be in this order: snd, snd2, snd5, snd4
+		REQUIRE(as.mChannels[0] == snd);
+		REQUIRE(as.mChannels[1] == snd2);
+		REQUIRE(as.mChannels[2] == snd5);
+		REQUIRE(as.mChannels[3] == snd4);
+
+		// Make sure that snd3 is not in the map (and the others are)
+		REQUIRE(as.mHandleMap.find(snd3) == as.mHandleMap.end());
+		REQUIRE(as.mHandleMap.find(snd) != as.mHandleMap.end());
+		REQUIRE(as.mHandleMap.find(snd2) != as.mHandleMap.end());
+		REQUIRE(as.mHandleMap.find(snd4) != as.mHandleMap.end());
+		REQUIRE(as.mHandleMap.find(snd5) != as.mHandleMap.end());
+
+		// Make sure we have the correct sounds in SDL_Mixer
+		REQUIRE(Mock::Mixer.mChannels[0].mChunk != nullptr);
+		REQUIRE(Mock::Mixer.mChannels[0].mChunk->mName == "Assets/Sounds/1.wav");
+		REQUIRE(Mock::Mixer.mChannels[1].mChunk != nullptr);
+		REQUIRE(Mock::Mixer.mChannels[1].mChunk->mName == "Assets/Sounds/2.wav");
+		REQUIRE(Mock::Mixer.mChannels[2].mChunk != nullptr);
+		REQUIRE(Mock::Mixer.mChannels[2].mChunk->mName == "Assets/Sounds/5.wav");
+		REQUIRE(Mock::Mixer.mChannels[3].mChunk != nullptr);
+		REQUIRE(Mock::Mixer.mChannels[3].mChunk->mName == "Assets/Sounds/4.wav");
+	}
+
+	SECTION("PlaySound running out of channels priority 3 (oldest sound)")
+	{
+		AudioSystem as(4);
+		as.CacheSound("1.wav");
+		as.CacheSound("2.wav");
+		as.CacheSound("3.wav");
+		as.CacheSound("4.wav");
+		as.CacheSound("5.wav");
+
+		SoundHandle snd = as.PlaySound("1.wav", true);
+		SoundHandle snd2 = as.PlaySound("2.wav", true);
+		SoundHandle snd3 = as.PlaySound("3.wav", true);
+		SoundHandle snd4 = as.PlaySound("4.wav", true);
+		SoundHandle snd5 = as.PlaySound("5.wav");
+
+		// Channels should be in this order: snd5, snd2, snd3, snd4
+		REQUIRE(as.mChannels[0] == snd5);
+		REQUIRE(as.mChannels[1] == snd2);
+		REQUIRE(as.mChannels[2] == snd3);
+		REQUIRE(as.mChannels[3] == snd4);
+
+		// Make sure that snd is not in the map (and the others are)
+		REQUIRE(as.mHandleMap.find(snd) == as.mHandleMap.end());
+		REQUIRE(as.mHandleMap.find(snd2) != as.mHandleMap.end());
+		REQUIRE(as.mHandleMap.find(snd3) != as.mHandleMap.end());
+		REQUIRE(as.mHandleMap.find(snd4) != as.mHandleMap.end());
+		REQUIRE(as.mHandleMap.find(snd5) != as.mHandleMap.end());
+
+		// Make sure we have the correct sounds in SDL_Mixer
+		REQUIRE(Mock::Mixer.mChannels[0].mChunk != nullptr);
+		REQUIRE(Mock::Mixer.mChannels[0].mChunk->mName == "Assets/Sounds/5.wav");
+		REQUIRE(Mock::Mixer.mChannels[1].mChunk != nullptr);
+		REQUIRE(Mock::Mixer.mChannels[1].mChunk->mName == "Assets/Sounds/2.wav");
+		REQUIRE(Mock::Mixer.mChannels[2].mChunk != nullptr);
+		REQUIRE(Mock::Mixer.mChannels[2].mChunk->mName == "Assets/Sounds/3.wav");
+		REQUIRE(Mock::Mixer.mChannels[3].mChunk != nullptr);
+		REQUIRE(Mock::Mixer.mChannels[3].mChunk->mName == "Assets/Sounds/4.wav");
 	}
 }
