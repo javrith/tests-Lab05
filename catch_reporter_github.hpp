@@ -1,12 +1,44 @@
+/*
+ *  Catch2 GitHub Actions Reporter
+ *  ----------------------------------------------------------
+ *  Copyright (c) 2022 Sanjay Madhav. All rights reserved.
+ *
+ *  Based and depends on code from Catch2 which is:
+ *  Copyright (c) 2020 Two Blue Cubes Ltd. All rights reserved.
+ *
+ *  Distributed under the Boost Software License, Version 1.0. (See accompanying
+ *  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ */
 #ifndef CATCH_REPORTER_GITHUB_HPP_INCLUDED
 #define CATCH_REPORTER_GITHUB_HPP_INCLUDED
 
 #include <cstring>
+#include <string>
+#include <fstream>
+#include <vector>
+#include <sstream>
 
 #ifdef __clang__
 #   pragma clang diagnostic push
 #   pragma clang diagnostic ignored "-Wpadded"
 #endif
+
+static inline std::vector<std::string> split(const std::string& str, char delim = '|') {
+    std::vector<std::string> retVal;
+
+    size_t start = 0;
+    size_t delimLoc = str.find_first_of(delim, start);
+    while (delimLoc != std::string::npos)
+    {
+        retVal.emplace_back(str.substr(start, delimLoc - start));
+
+        start = delimLoc + 1;
+        delimLoc = str.find_first_of(delim, start);
+    }
+
+    retVal.emplace_back(str.substr(start));
+    return retVal;
+}
 
 namespace Catch {
 
@@ -35,6 +67,7 @@ struct GitHubReporter : StreamingReporterBase<GitHubReporter> {
 	void benchmarkFailed(std::string const& error) override;
 #endif // CATCH_CONFIG_ENABLE_BENCHMARKING
 
+    void testCaseStarting( TestCaseInfo const& _testInfo ) override;
 	void testCaseEnded(TestCaseStats const& _testCaseStats) override;
 	void testGroupEnded(TestGroupStats const& _testGroupStats) override;
 	void testRunEnded(TestRunStats const& _testRunStats) override;
@@ -63,7 +96,13 @@ private:
 	void printTestFilters();
 
 private:
+    std::ofstream m_markdownFile;
 	bool m_headerPrinted = false;
+    int m_subTotal = 0;
+    int m_maxSubTotal = 0;
+    int m_totalScore = 0;
+    int m_maxScore = 0;
+    std::string m_lastAssertMsg;
 };
 
 namespace {
@@ -189,10 +228,10 @@ private:
             if (printInfoMessages || msg.type != ResultWas::Info) {
                 int indent = 2;
                 if (msg.type == ResultWas::ExplicitFailure) {
-                    stream << "::error::";
+                    stream << "error: ";
                     indent = 0;
                 } else if (msg.type == ResultWas::Warning) {
-                    stream << "::warning::";
+                    stream << "warning: ";
                     indent = 0;
                 }
                 stream << Column(msg.message).indent(indent) << '\n';
@@ -238,11 +277,30 @@ GitHubReporter::GitHubReporter(ReporterConfig const& config)
                 { "estimated    high mean  high std dev", 14, ColumnInfo::Right }
             };
         }
-    }())) {}
-GitHubReporter::~GitHubReporter() = default;
+    }())) {
+        const char* githubFileName = std::getenv("GITHUB_STEP_SUMMARY");
+        if (githubFileName) {
+            m_markdownFile.open(githubFileName);
+        } else {
+            m_markdownFile.open("GradeReport.md");
+        }
+        m_markdownFile << "## Grade Report\n";
+        m_markdownFile << "<table>\n";
+        m_markdownFile << "<thead><tr><td><b>Result</b></td><td><b>Test</b></td>"
+            "<td><b>Details</b></td></tr></thead>\n";
+        m_markdownFile.flush();
+    }
+GitHubReporter::~GitHubReporter() {
+    m_markdownFile << "</table>\n";
+    if (m_maxScore == m_totalScore) {
+        m_markdownFile << "\n## \xF0\x9F\x94\xA5 All test cases passed!! \xF0\x9F\x98\x80\n\n";
+    } else {
+        m_markdownFile << "\n## \xF0\x9F\x9A\xA8\xF0\x9F\x9A\xA8 Some test cases failed!! \xF0\x9F\x98\xAD\xF0\x9F\x98\xAD\n\n";
+    }
+}
 
 std::string GitHubReporter::getDescription() {
-    return "Like console reporter but for github annotations";
+    return "Like console reporter but for GitHub Actions outputs markdown also";
 }
 
 void GitHubReporter::noMatchingTestCases(std::string const& spec) {
@@ -269,18 +327,55 @@ bool GitHubReporter::assertionEnded(AssertionStats const& _assertionStats) {
     GitHubAssertionPrinter printer(stream, _assertionStats, includeResults);
     printer.print();
     stream << std::endl;
+
+    if (result.isOk()) {
+        m_lastAssertMsg.clear();
+    } else {
+        std::ostringstream sstream;
+        GitHubAssertionPrinter stringPrinter(sstream, _assertionStats, includeResults);
+        stringPrinter.print();
+        m_lastAssertMsg = sstream.str();
+    }
+    
     return true;
 }
 
 void GitHubReporter::sectionStarting(SectionInfo const& _sectionInfo) {
     m_tablePrinter->close();
     m_headerPrinted = false;
+    m_lastAssertMsg.clear();
     StreamingReporterBase::sectionStarting(_sectionInfo);
 }
 void GitHubReporter::sectionEnded(SectionStats const& _sectionStats) {
+    if (_sectionStats.sectionInfo.name != currentTestCaseInfo->name) {
+        int points = 1;
+        m_maxSubTotal += points;
+        
+        std::string result;
+        int earned = 0;
+        if (_sectionStats.assertions.failed > 0) {
+            result = "\xE2\x9D\x8C FAIL";
+        }
+        else {
+            result = "\xE2\x9C\x85 PASS";
+            earned = points;
+        }
+        m_subTotal += earned;
+
+        m_markdownFile << "<tr><td>" << result << "</td>\n";
+        m_markdownFile << "<td>" << _sectionStats.sectionInfo.name << "</td>\n";
+        if (!m_lastAssertMsg.empty()) {
+            m_markdownFile << "<td><details closed><summary>Failure Info</summary>\n";
+            m_markdownFile << "<pre>\n" << m_lastAssertMsg << "</pre></details></td>\n";
+        } else {
+            m_markdownFile << "<td></td>\n";
+        }
+        m_markdownFile << "</tr>" << std::endl;
+    }
+
     m_tablePrinter->close();
 	if (_sectionStats.assertions.failed > 0 && _sectionStats.sectionInfo.name != currentTestCaseInfo->name) {
-        stream << "::error::Test case failed: " << _sectionStats.sectionInfo.name << "'\n";
+        stream << "Test case failed: " << _sectionStats.sectionInfo.name << "'\n";
 	}
     if (_sectionStats.missingAssertions) {
         lazyPrint();
@@ -349,10 +444,21 @@ void GitHubReporter::benchmarkFailed(std::string const& error) {
 }
 #endif // CATCH_CONFIG_ENABLE_BENCHMARKING
 
+void GitHubReporter::testCaseStarting(TestCaseInfo const& _testInfo) {
+    StreamingReporterBase::testCaseStarting(_testInfo);
+    m_markdownFile << "<tr><td colspan='5'><b>" << _testInfo.name << "</b></td></tr>" << std::endl;
+    m_subTotal = 0;
+    m_maxSubTotal = 0;
+}
 void GitHubReporter::testCaseEnded(TestCaseStats const& _testCaseStats) {
     m_tablePrinter->close();
     StreamingReporterBase::testCaseEnded(_testCaseStats);
     m_headerPrinted = false;
+
+    m_totalScore += m_subTotal;
+    m_maxScore += m_maxSubTotal;
+    m_subTotal = 0;
+    m_maxSubTotal = 0;
 }
 void GitHubReporter::testGroupEnded(TestGroupStats const& _testGroupStats) {
     if (currentGroupInfo.used) {
