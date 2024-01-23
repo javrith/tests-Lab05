@@ -283,6 +283,7 @@ GitHubReporter::GitHubReporter(ReporterConfig const& config)
             std::cout << githubFileName << std::endl;
             m_markdownFile.open(githubFileName);
         } else {
+            std::cout << "wut" << std::endl;
             m_markdownFile.open("GradeReport.md");
         }
         m_markdownFile << "## Grade Report\n";
