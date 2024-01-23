@@ -280,6 +280,7 @@ GitHubReporter::GitHubReporter(ReporterConfig const& config)
     }())) {
         const char* githubFileName = std::getenv("GITHUB_STEP_SUMMARY");
         if (githubFileName) {
+            std::cout << githubFileName << std::endl;
             m_markdownFile.open(githubFileName);
         } else {
             m_markdownFile.open("GradeReport.md");
@@ -297,6 +298,7 @@ GitHubReporter::~GitHubReporter() {
     } else {
         m_markdownFile << "\n## \xF0\x9F\x9A\xA8\xF0\x9F\x9A\xA8 Some test cases failed!! \xF0\x9F\x98\xAD\xF0\x9F\x98\xAD\n\n";
     }
+    m_markdownFile.flush();
 }
 
 std::string GitHubReporter::getDescription() {
