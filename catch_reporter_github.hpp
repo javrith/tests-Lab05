@@ -284,7 +284,7 @@ GitHubReporter::GitHubReporter(ReporterConfig const& config)
         } else {
             m_markdownFile.open("GradeReport.md");
         }
-        m_markdownFile << "## Grade Report\n";
+        m_markdownFile << "## Unit Tests Results\n";
         m_markdownFile << "<table>\n";
         m_markdownFile << "<thead><tr><td><b>Result</b></td><td><b>Test</b></td>"
             "<td><b>Details</b></td></tr></thead>\n";
