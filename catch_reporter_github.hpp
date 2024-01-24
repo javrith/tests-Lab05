@@ -280,10 +280,8 @@ GitHubReporter::GitHubReporter(ReporterConfig const& config)
     }())) {
         const char* githubFileName = std::getenv("GITHUB_STEP_SUMMARY");
         if (githubFileName) {
-            std::cout << githubFileName << std::endl;
             m_markdownFile.open(githubFileName);
         } else {
-            std::cout << "wut" << std::endl;
             m_markdownFile.open("GradeReport.md");
         }
         m_markdownFile << "## Grade Report\n";
