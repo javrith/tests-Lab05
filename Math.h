@@ -27,25 +27,20 @@ namespace Math
 		return radians * 180.0f / Pi;
 	}
 
-	[[nodiscard]] inline bool NearZero(float val, float epsilon = 0.001f)
-	{
-		return fabs(val) <= epsilon;
-	}
-
 	template <typename T>
-	[[nodiscard]] T Max(const T& a, const T& b)
+	[[nodiscard]] T Max(T a, T b)
 	{
 		return (a < b ? b : a);
 	}
 
 	template <typename T>
-	[[nodiscard]] T Min(const T& a, const T& b)
+	[[nodiscard]] T Min(T a, T b)
 	{
 		return (a < b ? a : b);
 	}
 
 	template <typename T>
-	[[nodiscard]] T Clamp(const T& value, const T& lower, const T& upper)
+	[[nodiscard]] T Clamp(T value, T lower, T upper)
 	{
 		return Min(upper, Max(lower, value));
 	}
@@ -98,6 +93,15 @@ namespace Math
 	[[nodiscard]] inline float Fmod(float numer, float denom)
 	{
 		return fmod(numer, denom);
+	}
+
+	[[nodiscard]] inline float Sgn(float a)
+	{
+		if (a > 0.0f)
+			return 1.0f;
+		if (a < 0.0f)
+			return -1.0f;
+		return 0.0f;
 	}
 } // namespace Math
 
@@ -227,7 +231,7 @@ public:
 	// Lerp from A to B by f
 	[[nodiscard]] static Vector2 Lerp(const Vector2& a, const Vector2& b, float f)
 	{
-		return Vector2(a + f * (b - a));
+		return a + f * (b - a);
 	}
 
 	// Reflect V about (normalized) N
@@ -403,7 +407,7 @@ public:
 	// Lerp from A to B by f
 	[[nodiscard]] static Vector3 Lerp(const Vector3& a, const Vector3& b, float f)
 	{
-		return Vector3(a + f * (b - a));
+		return a + f * (b - a);
 	}
 
 	// Reflect V about (normalized) N
@@ -438,6 +442,168 @@ public:
 	static const Vector3 Infinity;
 	static const Vector3 NegInfinity;
 	// NOLINTEND
+};
+
+// 3D Vector
+class Vector4
+{
+public:
+	// NOLINTBEGIN
+	float x;
+	float y;
+	float z;
+	float w;
+	// NOLINTEND
+
+	Vector4()
+	: x(0.0f)
+	, y(0.0f)
+	, z(0.0f)
+	, w(0.0f)
+	{
+	}
+
+	explicit Vector4(float inX, float inY, float inZ, float inW)
+	: x(inX)
+	, y(inY)
+	, z(inZ)
+	, w(inW)
+	{
+	}
+
+	explicit Vector4(float inXYZW)
+	: x(inXYZW)
+	, y(inXYZW)
+	, z(inXYZW)
+	, w(inXYZW)
+	{
+	}
+
+	explicit Vector4(int inX, int inY, int inZ, int inW)
+	: x(static_cast<float>(inX))
+	, y(static_cast<float>(inY))
+	, z(static_cast<float>(inZ))
+	, w(static_cast<float>(inW))
+	{
+	}
+
+	explicit Vector4(const Vector3& v, float inW)
+	: x(v.x)
+	, y(v.y)
+	, z(v.z)
+	, w(inW)
+	{
+	}
+
+	// Cast to a const float pointer
+	const float* GetAsFloatPtr() const { return reinterpret_cast<const float*>(&x); }
+
+	// Set all three components in one line
+	void Set(float inX, float inY, float inZ, float inW)
+	{
+		x = inX;
+		y = inY;
+		z = inZ;
+		w = inW;
+	}
+
+	// Vector addition (a + b)
+	[[nodiscard]] friend Vector4 operator+(const Vector4& a, const Vector4& b)
+	{
+		return Vector4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+	}
+
+	// Vector subtraction (a - b)
+	[[nodiscard]] friend Vector4 operator-(const Vector4& a, const Vector4& b)
+	{
+		return Vector4(a.x - b.x, a.y - b.y, a.z - b.z, a.z - b.z);
+	}
+
+	// Component-wise multiplication
+	[[nodiscard]] friend Vector4 operator*(const Vector4& left, const Vector4& right)
+	{
+		return Vector4(left.x * right.x, left.y * right.y, left.z * right.z, left.w * right.w);
+	}
+
+	// Scalar multiplication
+	[[nodiscard]] friend Vector4 operator*(const Vector4& vec, float scalar)
+	{
+		return Vector4(vec.x * scalar, vec.y * scalar, vec.z * scalar, vec.w * scalar);
+	}
+
+	// Scalar multiplication
+	[[nodiscard]] friend Vector4 operator*(float scalar, const Vector4& vec)
+	{
+		return Vector4(vec.x * scalar, vec.y * scalar, vec.z * scalar, vec.w * scalar);
+	}
+
+	// Scalar *=
+	Vector4& operator*=(float scalar)
+	{
+		x *= scalar;
+		y *= scalar;
+		z *= scalar;
+		w *= scalar;
+		return *this;
+	}
+
+	// Vector +=
+	Vector4& operator+=(const Vector4& right)
+	{
+		x += right.x;
+		y += right.y;
+		z += right.z;
+		w += right.w;
+		return *this;
+	}
+
+	// Vector -=
+	Vector4& operator-=(const Vector4& right)
+	{
+		x -= right.x;
+		y -= right.y;
+		z -= right.z;
+		z -= right.w;
+		return *this;
+	}
+
+	// Length squared of vector
+	[[nodiscard]] float LengthSq() const { return (x * x + y * y + z * z + w * w); }
+
+	// Length of vector
+	[[nodiscard]] float Length() const { return (Math::Sqrt(LengthSq())); }
+
+	// Normalize this vector
+	void Normalize()
+	{
+		float length = Length();
+		x /= length;
+		y /= length;
+		z /= length;
+		w /= length;
+	}
+
+	// Normalize the provided vector
+	[[nodiscard]] static Vector4 Normalize(const Vector4& vec)
+	{
+		Vector4 temp = vec;
+		temp.Normalize();
+		return temp;
+	}
+
+	// Dot product between two vectors (a dot b)
+	[[nodiscard]] static float Dot(const Vector4& a, const Vector4& b)
+	{
+		return (a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w);
+	}
+
+	// Lerp from A to B by f
+	[[nodiscard]] static Vector4 Lerp(const Vector4& a, const Vector4& b, float f)
+	{
+		return a + f * (b - a);
+	}
+
+	[[nodiscard]] static Vector4 Transform(const Vector4& vec, const class Matrix4& mat);
 };
 
 // 3x3 Matrix
@@ -625,6 +791,8 @@ public:
 
 	// Invert the matrix - super slow
 	void Invert();
+
+	void Transpose();
 
 	// Get the translation component of the matrix
 	[[nodiscard]] Vector3 GetTranslation() const
@@ -908,6 +1076,39 @@ public:
 
 	static const Quaternion Identity; // NOLINT
 };
+
+namespace Math
+{
+	[[nodiscard]] inline bool NearlyZero(float val, float epsilon = 0.001f)
+	{
+		return Abs(val) <= epsilon;
+	}
+
+	[[nodiscard]] inline bool NearlyEqual(float a, float b, float epsilon = 0.001f)
+	{
+		return Abs(a - b) <= epsilon;
+	}
+
+	[[nodiscard]] inline bool NearlyEqual(const Vector2& a, const Vector2& b,
+										  float epsilon = 0.001f)
+	{
+		return NearlyEqual(a.x, b.x, epsilon) && NearlyEqual(a.y, b.y, epsilon);
+	}
+
+	[[nodiscard]] inline bool NearlyEqual(const Vector3& a, const Vector3& b,
+										  float epsilon = 0.001f)
+	{
+		return NearlyEqual(a.x, b.x, epsilon) && NearlyEqual(a.y, b.y, epsilon) &&
+			   NearlyEqual(a.z, b.z, epsilon);
+	}
+
+	[[nodiscard]] inline bool NearlyEqual(const Quaternion& a, const Quaternion& b,
+										  float epsilon = 0.001f)
+	{
+		return NearlyEqual(a.x, b.x, epsilon) && NearlyEqual(a.y, b.y, epsilon) &&
+			   NearlyEqual(a.z, b.z, epsilon) && NearlyEqual(a.w, b.w, epsilon);
+	}
+} // namespace Math
 
 namespace Color
 {
