@@ -1,3 +1,4 @@
+#pragma once
 #define MIX_DEFAULT_FORMAT 0x8010
 #include <string>
 #include <set>
@@ -201,6 +202,11 @@ int Mix_Playing(int channel)
 Mix_Chunk* Mix_LoadWAV(const char* file)
 {
 	return Mock::Mixer.LoadWAV(file);
+}
+
+const char* Mix_GetError()
+{
+	return "stubbed error";
 }
 
 Mock Mock::Mixer;
