@@ -1,32 +1,16 @@
 #include "Math.h"
 
-const Vector2 Vector2::Zero(0.0f, 0.0f);
-const Vector2 Vector2::UnitX(1.0f, 0.0f);
-const Vector2 Vector2::UnitY(0.0f, 1.0f);
-const Vector2 Vector2::NegUnitX(-1.0f, 0.0f);
-const Vector2 Vector2::NegUnitY(0.0f, -1.0f);
+static float gM3Ident[3][3] = {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
+const Matrix3 Matrix3::Identity(gM3Ident);
 
-const Vector3 Vector3::Zero(0.0f, 0.0f, 0.f);
-const Vector3 Vector3::UnitX(1.0f, 0.0f, 0.0f);
-const Vector3 Vector3::UnitY(0.0f, 1.0f, 0.0f);
-const Vector3 Vector3::UnitZ(0.0f, 0.0f, 1.0f);
-const Vector3 Vector3::NegUnitX(-1.0f, 0.0f, 0.0f);
-const Vector3 Vector3::NegUnitY(0.0f, -1.0f, 0.0f);
-const Vector3 Vector3::NegUnitZ(0.0f, 0.0f, -1.0f);
-const Vector3 Vector3::Infinity(Math::Infinity, Math::Infinity, Math::Infinity);
-const Vector3 Vector3::NegInfinity(Math::NegInfinity, Math::NegInfinity, Math::NegInfinity);
+static float gM4Ident[4][4] = {{1.0f, 0.0f, 0.0f, 0.0f},
+							   {0.0f, 1.0f, 0.0f, 0.0f},
+							   {0.0f, 0.0f, 1.0f, 0.0f},
+							   {0.0f, 0.0f, 0.0f, 1.0f}};
 
-static float m3Ident[3][3] = {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
-const Matrix3 Matrix3::Identity(m3Ident);
+const Matrix4 Matrix4::Identity(gM4Ident);
 
-static float m4Ident[4][4] = {{1.0f, 0.0f, 0.0f, 0.0f},
-							  {0.0f, 1.0f, 0.0f, 0.0f},
-							  {0.0f, 0.0f, 1.0f, 0.0f},
-							  {0.0f, 0.0f, 0.0f, 1.0f}};
-
-const Matrix4 Matrix4::Identity(m4Ident);
-
-const Quaternion Quaternion::Identity(0.0f, 0.0f, 0.0f, 1.0f);
+const Quaternion Quaternion::Identity;
 
 Vector2 Vector2::Transform(const Vector2& vec, const Matrix3& mat, float w /*= 1.0f*/)
 {
@@ -194,7 +178,7 @@ void Matrix4::Invert()
 	det = src[0] * dst[0] + src[1] * dst[1] + src[2] * dst[2] + src[3] * dst[3];
 	/* calculate matrix inverse */
 	det = 1 / det;
-	for (int j = 0; j < 16; j++)
+	for (int j = 0; j < 16; j++) // NOLINT
 		dst[j] *= det;
 
 	// Set it back

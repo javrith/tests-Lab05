@@ -10,37 +10,37 @@
 namespace Math
 {
 	// NOLINTBEGIN
-	const float Pi = 3.1415926535f;
-	const float TwoPi = Pi * 2.0f;
-	const float PiOver2 = Pi / 2.0f;
-	const float Infinity = std::numeric_limits<float>::infinity();
-	const float NegInfinity = -std::numeric_limits<float>::infinity();
+	constexpr float Pi = 3.1415926535f;
+	constexpr float TwoPi = Pi * 2.0f;
+	constexpr float PiOver2 = Pi / 2.0f;
+	constexpr float Infinity = std::numeric_limits<float>::infinity();
+	constexpr float NegInfinity = -std::numeric_limits<float>::infinity();
 	// NOLINTEND
 
-	[[nodiscard]] inline float ToRadians(float degrees)
+	[[nodiscard]] inline constexpr float ToRadians(float degrees)
 	{
 		return degrees * Pi / 180.0f;
 	}
 
-	[[nodiscard]] inline float ToDegrees(float radians)
+	[[nodiscard]] inline constexpr float ToDegrees(float radians)
 	{
 		return radians * 180.0f / Pi;
 	}
 
 	template <typename T>
-	[[nodiscard]] T Max(T a, T b)
+	[[nodiscard]] constexpr T Max(T a, T b)
 	{
 		return (a < b ? b : a);
 	}
 
 	template <typename T>
-	[[nodiscard]] T Min(T a, T b)
+	[[nodiscard]] constexpr T Min(T a, T b)
 	{
 		return (a < b ? a : b);
 	}
 
 	template <typename T>
-	[[nodiscard]] T Clamp(T value, T lower, T upper)
+	[[nodiscard]] constexpr T Clamp(T value, T lower, T upper)
 	{
 		return Min(upper, Max(lower, value));
 	}
@@ -80,7 +80,7 @@ namespace Math
 		return 1.0f / Tan(angle);
 	}
 
-	[[nodiscard]] inline float Lerp(float a, float b, float f)
+	[[nodiscard]] inline constexpr float Lerp(float a, float b, float f)
 	{
 		return a + f * (b - a);
 	}
@@ -95,13 +95,23 @@ namespace Math
 		return fmod(numer, denom);
 	}
 
-	[[nodiscard]] inline float Sgn(float a)
+	[[nodiscard]] inline constexpr float Sgn(float a)
 	{
 		if (a > 0.0f)
 			return 1.0f;
 		if (a < 0.0f)
 			return -1.0f;
 		return 0.0f;
+	}
+
+	[[nodiscard]] inline bool NearlyZero(float val, float epsilon = 0.001f)
+	{
+		return Abs(val) <= epsilon;
+	}
+
+	[[nodiscard]] inline bool NearlyEqual(float a, float b, float epsilon = 0.001f)
+	{
+		return Abs(a - b) <= epsilon;
 	}
 } // namespace Math
 
@@ -114,25 +124,25 @@ public:
 	float y;
 	// NOLINTEND
 
-	Vector2()
+	constexpr Vector2()
 	: x(0.0f)
 	, y(0.0f)
 	{
 	}
 
-	explicit Vector2(float inX, float inY)
+	constexpr Vector2(float inX, float inY)
 	: x(inX)
 	, y(inY)
 	{
 	}
 
-	explicit Vector2(float inXY)
+	explicit constexpr Vector2(float inXY)
 	: x(inXY)
 	, y(inXY)
 	{
 	}
 
-	explicit Vector2(int inX, int inY)
+	constexpr Vector2(int inX, int inY)
 	: x(static_cast<float>(inX))
 	, y(static_cast<float>(inY))
 	{
@@ -259,6 +269,12 @@ public:
 	// NOLINTEND
 };
 
+inline constexpr Vector2 Vector2::Zero(0.0f, 0.0f);
+inline constexpr Vector2 Vector2::UnitX(1.0f, 0.0f);
+inline constexpr Vector2 Vector2::UnitY(0.0f, 1.0f);
+inline constexpr Vector2 Vector2::NegUnitX(-1.0f, 0.0f);
+inline constexpr Vector2 Vector2::NegUnitY(0.0f, -1.0f);
+
 // 3D Vector
 class Vector3
 {
@@ -269,28 +285,28 @@ public:
 	float z;
 	// NOLINTEND
 
-	Vector3()
+	constexpr Vector3()
 	: x(0.0f)
 	, y(0.0f)
 	, z(0.0f)
 	{
 	}
 
-	explicit Vector3(float inX, float inY, float inZ)
+	constexpr Vector3(float inX, float inY, float inZ)
 	: x(inX)
 	, y(inY)
 	, z(inZ)
 	{
 	}
 
-	explicit Vector3(float inXYZ)
+	explicit constexpr Vector3(float inXYZ)
 	: x(inXYZ)
 	, y(inXYZ)
 	, z(inXYZ)
 	{
 	}
 
-	explicit Vector3(int inX, int inY, int inZ)
+	constexpr Vector3(int inX, int inY, int inZ)
 	: x(static_cast<float>(inX))
 	, y(static_cast<float>(inY))
 	, z(static_cast<float>(inZ))
@@ -444,6 +460,17 @@ public:
 	// NOLINTEND
 };
 
+inline constexpr Vector3 Vector3::Zero(0.0f, 0.0f, 0.f);
+inline constexpr Vector3 Vector3::UnitX(1.0f, 0.0f, 0.0f);
+inline constexpr Vector3 Vector3::UnitY(0.0f, 1.0f, 0.0f);
+inline constexpr Vector3 Vector3::UnitZ(0.0f, 0.0f, 1.0f);
+inline constexpr Vector3 Vector3::NegUnitX(-1.0f, 0.0f, 0.0f);
+inline constexpr Vector3 Vector3::NegUnitY(0.0f, -1.0f, 0.0f);
+inline constexpr Vector3 Vector3::NegUnitZ(0.0f, 0.0f, -1.0f);
+inline constexpr Vector3 Vector3::Infinity(Math::Infinity, Math::Infinity, Math::Infinity);
+inline constexpr Vector3 Vector3::NegInfinity(Math::NegInfinity, Math::NegInfinity,
+											  Math::NegInfinity);
+
 // 3D Vector
 class Vector4
 {
@@ -455,7 +482,7 @@ public:
 	float w;
 	// NOLINTEND
 
-	Vector4()
+	constexpr Vector4()
 	: x(0.0f)
 	, y(0.0f)
 	, z(0.0f)
@@ -463,7 +490,7 @@ public:
 	{
 	}
 
-	explicit Vector4(float inX, float inY, float inZ, float inW)
+	constexpr Vector4(float inX, float inY, float inZ, float inW)
 	: x(inX)
 	, y(inY)
 	, z(inZ)
@@ -471,7 +498,7 @@ public:
 	{
 	}
 
-	explicit Vector4(float inXYZW)
+	explicit constexpr Vector4(float inXYZW)
 	: x(inXYZW)
 	, y(inXYZW)
 	, z(inXYZW)
@@ -479,7 +506,7 @@ public:
 	{
 	}
 
-	explicit Vector4(int inX, int inY, int inZ, int inW)
+	constexpr Vector4(int inX, int inY, int inZ, int inW)
 	: x(static_cast<float>(inX))
 	, y(static_cast<float>(inY))
 	, z(static_cast<float>(inZ))
@@ -487,7 +514,7 @@ public:
 	{
 	}
 
-	explicit Vector4(const Vector3& v, float inW)
+	explicit constexpr Vector4(const Vector3& v, float inW)
 	: x(v.x)
 	, y(v.y)
 	, z(v.z)
@@ -952,19 +979,24 @@ public:
 // (Unit) Quaternion
 class Quaternion
 {
-public:
+	friend class Matrix4;
+	friend class Vector3;
+
 	// NOLINTBEGIN
 	float x;
 	float y;
 	float z;
 	float w;
-
-	Quaternion() { *this = Quaternion::Identity; }
-
-	// This directly sets the quaternion components --
-	// don't use for axis/angle
-	explicit Quaternion(float inX, float inY, float inZ, float inW) { Set(inX, inY, inZ, inW); }
 	// NOLINTEND
+
+public:
+	Quaternion()
+	{
+		x = 0.0f;
+		y = 0.0f;
+		z = 0.0f;
+		w = 1.0f;
+	}
 
 	// Construct the quaternion from an axis and angle
 	// It is assumed that axis is already normalized,
@@ -1005,6 +1037,12 @@ public:
 		y /= length;
 		z /= length;
 		w /= length;
+	}
+
+	[[nodiscard]] bool NearlyEqual(const Quaternion& other, float epsilon = 0.001f) const
+	{
+		return Math::NearlyEqual(x, other.x, epsilon) && Math::NearlyEqual(y, other.y, epsilon) &&
+			   Math::NearlyEqual(z, other.z, epsilon) && Math::NearlyEqual(w, other.w, epsilon);
 	}
 
 	// Normalize the provided quaternion
@@ -1079,16 +1117,6 @@ public:
 
 namespace Math
 {
-	[[nodiscard]] inline bool NearlyZero(float val, float epsilon = 0.001f)
-	{
-		return Abs(val) <= epsilon;
-	}
-
-	[[nodiscard]] inline bool NearlyEqual(float a, float b, float epsilon = 0.001f)
-	{
-		return Abs(a - b) <= epsilon;
-	}
-
 	[[nodiscard]] inline bool NearlyEqual(const Vector2& a, const Vector2& b,
 										  float epsilon = 0.001f)
 	{
@@ -1105,23 +1133,22 @@ namespace Math
 	[[nodiscard]] inline bool NearlyEqual(const Quaternion& a, const Quaternion& b,
 										  float epsilon = 0.001f)
 	{
-		return NearlyEqual(a.x, b.x, epsilon) && NearlyEqual(a.y, b.y, epsilon) &&
-			   NearlyEqual(a.z, b.z, epsilon) && NearlyEqual(a.w, b.w, epsilon);
+		return a.NearlyEqual(b, epsilon);
 	}
 } // namespace Math
 
 namespace Color
 {
 	// NOLINTBEGIN
-	static const Vector3 Black(0.0f, 0.0f, 0.0f);
-	static const Vector3 White(1.0f, 1.0f, 1.0f);
-	static const Vector3 Red(1.0f, 0.0f, 0.0f);
-	static const Vector3 Green(0.0f, 1.0f, 0.0f);
-	static const Vector3 Blue(0.0f, 0.0f, 1.0f);
-	static const Vector3 Yellow(1.0f, 1.0f, 0.0f);
-	static const Vector3 LightYellow(1.0f, 1.0f, 0.88f);
-	static const Vector3 LightBlue(0.68f, 0.85f, 0.9f);
-	static const Vector3 LightPink(1.0f, 0.71f, 0.76f);
-	static const Vector3 LightGreen(0.56f, 0.93f, 0.56f);
+	constexpr Vector3 Black(0.0f, 0.0f, 0.0f);
+	constexpr Vector3 White(1.0f, 1.0f, 1.0f);
+	constexpr Vector3 Red(1.0f, 0.0f, 0.0f);
+	constexpr Vector3 Green(0.0f, 1.0f, 0.0f);
+	constexpr Vector3 Blue(0.0f, 0.0f, 1.0f);
+	constexpr Vector3 Yellow(1.0f, 1.0f, 0.0f);
+	constexpr Vector3 LightYellow(1.0f, 1.0f, 0.88f);
+	constexpr Vector3 LightBlue(0.68f, 0.85f, 0.9f);
+	constexpr Vector3 LightPink(1.0f, 0.71f, 0.76f);
+	constexpr Vector3 LightGreen(0.56f, 0.93f, 0.56f);
 	// NOLINTEND
 } // namespace Color
