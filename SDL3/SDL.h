@@ -2,6 +2,7 @@
 #pragma once
 
 #include <string>
+#include "SDL_stdinc.h"
 
 void SDL_Log(...);
 

@@ -8,7 +8,6 @@
 #ifdef near
 #undef near
 #endif
-#include "Actor.h"
 
 // This is janky but doing it this way to account for weird include
 // dependencies people may have introduced into CollisionComponent.cpp
@@ -25,12 +24,18 @@
 #endif
 #define SDL_assert_release(condition) REQUIRE(condition)
 
+#define private public
+#define protected public
+
+#include "AudioSystem.h"
+
+Mock Mock::Mixer;
+
 // Skip over SDL logs completely
-static void SDL_Log(...)
+void SDL_Log(...)
 {
 }
 
-#include "AudioSystem.cpp"
 const float DELTA_TIME = 0.016f;
 
 TEST_CASE("AudioSystem tests")
@@ -38,10 +43,8 @@ TEST_CASE("AudioSystem tests")
 	SECTION("Constructor")
 	{
 		AudioSystem as;
-		REQUIRE(Mock::Mixer.mFrequency == 44100);
-		REQUIRE(Mock::Mixer.mFormat == MIX_DEFAULT_FORMAT);
-		REQUIRE(Mock::Mixer.mOutputChannels == 2);
-		REQUIRE(Mock::Mixer.mChunkSize == 2048);
+		REQUIRE(Mock::Mixer.mDevID == 0);
+		REQUIRE(Mock::Mixer.mSpec == nullptr);
 		REQUIRE(Mock::Mixer.mChannels.size() == 8);
 		REQUIRE(as.mChannels.size() == 8);
 		for (int i = 0; i < 8; i++)
@@ -53,10 +56,8 @@ TEST_CASE("AudioSystem tests")
 	SECTION("Passing in 16 to constructor has 16 channels")
 	{
 		AudioSystem as(16);
-		REQUIRE(Mock::Mixer.mFrequency == 44100);
-		REQUIRE(Mock::Mixer.mFormat == MIX_DEFAULT_FORMAT);
-		REQUIRE(Mock::Mixer.mOutputChannels == 2);
-		REQUIRE(Mock::Mixer.mChunkSize == 2048);
+		REQUIRE(Mock::Mixer.mDevID == 0);
+		REQUIRE(Mock::Mixer.mSpec == nullptr);
 		REQUIRE(Mock::Mixer.mChannels.size() == 16);
 		REQUIRE(as.mChannels.size() == 16);
 		for (int i = 0; i < 16; i++)

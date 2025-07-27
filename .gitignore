@@ -39,4 +39,3 @@ CMakeScripts/
 itp380labs.xcodeproj/
 cmake-build*/
 tests.xcodeproj/
-AudioSystem.cpp

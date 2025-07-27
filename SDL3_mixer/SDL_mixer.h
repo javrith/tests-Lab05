@@ -1,8 +1,8 @@
 #pragma once
-#define MIX_DEFAULT_FORMAT 0x8010
 #include <string>
 #include <set>
 #include <vector>
+#include "../catch.hpp"
 
 struct Mix_Chunk
 {
@@ -11,12 +11,10 @@ struct Mix_Chunk
 
 struct Mock
 {
-	void OpenAudio(int frequency, Uint16 format, int channels, int chunksize)
+	void OpenAudio(int devid, int* spec)
 	{
-		mFrequency = frequency;
-		mFormat = format;
-		mOutputChannels = channels;
-		mChunkSize = chunksize;
+		mDevID = devid;
+		mSpec = spec;
 
 		AllocateChannels(4);
 	}
@@ -25,10 +23,8 @@ struct Mock
 
 	void Reset()
 	{
-		mFrequency = 0;
-		mFormat = 0;
-		mOutputChannels = 0;
-		mChunkSize = 0;
+		mDevID = -1;
+		mSpec = nullptr;
 		mChannels.clear();
 		mChunks.clear();
 	}
@@ -139,10 +135,8 @@ struct Mock
 		int mLoops = 0;
 	};
 
-	int mFrequency = 0;
-	Uint16 mFormat = 0;
-	int mOutputChannels = 0;
-	int mChunkSize = 0;
+	int mDevID = -1;
+	int* mSpec = nullptr;
 
 	std::set<Mix_Chunk*> mChunks;
 	std::vector<ChannelInfo> mChannels;
@@ -150,63 +144,61 @@ struct Mock
 	static Mock Mixer;
 };
 
-int Mix_OpenAudio(int frequency, Uint16 format, int channels, int chunksize)
+inline bool Mix_OpenAudio(int devid, int *spec)
 {
 	Mock::Mixer.Reset();
-	Mock::Mixer.OpenAudio(frequency, format, channels, chunksize);
+	Mock::Mixer.OpenAudio(devid, spec);
 	return 0;
 }
 
-int Mix_AllocateChannels(int numchans)
+inline int Mix_AllocateChannels(int numchans)
 {
 	Mock::Mixer.AllocateChannels(numchans);
 	return 0;
 }
 
-void Mix_FreeChunk(Mix_Chunk* chunk)
+inline void Mix_FreeChunk(Mix_Chunk* chunk)
 {
 	Mock::Mixer.FreeChunk(chunk);
 }
 
-void Mix_CloseAudio()
+inline void Mix_CloseAudio()
 {
 	Mock::Mixer.CloseAudio();
 }
 
-int Mix_PlayChannel(int channel, Mix_Chunk* chunk, int loops)
+inline int Mix_PlayChannel(int channel, Mix_Chunk* chunk, int loops)
 {
 	return Mock::Mixer.PlayChannel(channel, chunk, loops);
 }
 
-int Mix_HaltChannel(int channel)
+inline int Mix_HaltChannel(int channel)
 {
 	Mock::Mixer.HaltChannel(channel);
 	return 0;
 }
 
-void Mix_Pause(int channel)
+inline void Mix_Pause(int channel)
 {
 	Mock::Mixer.Pause(channel);
 }
 
-void Mix_Resume(int channel)
+inline void Mix_Resume(int channel)
 {
 	Mock::Mixer.Resume(channel);
 }
 
-int Mix_Playing(int channel)
+inline int Mix_Playing(int channel)
 {
 	return Mock::Mixer.Playing(channel);
 }
 
-Mix_Chunk* Mix_LoadWAV(const char* file)
+inline Mix_Chunk* Mix_LoadWAV(const char* file)
 {
 	return Mock::Mixer.LoadWAV(file);
 }
 
-const char* Mix_GetError()
+inline const char* Mix_GetError()
 {
 	return "stubbed error";
 }
-
-Mock Mock::Mixer;
